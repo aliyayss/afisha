@@ -2,7 +2,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Movie, Director, Review
-from .serializers import MovieSerializer, DirectorSerializer, ReviewSerializer
+from .serializers import (MovieSerializer,
+                          DirectorSerializer,
+                          ReviewSerializer, MovieValidateSerializer, DirectorValidateSerializer, ReviewValidateSerializer)
 
 @api_view(['GET', 'DELETE', 'PUT'])
 def movie_detail_api_view(request, id):
@@ -42,6 +44,9 @@ def movie_list_create_api_view(request):
         return Response(data=data, status=status.HTTP_200_OK)
 
     elif request.method == 'POST':
+        serializer = MovieValidateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
         title = request.data.get('title')
         director = request.data.get('director')
         description = request.data.get('description')
@@ -64,6 +69,9 @@ def director_list_api_view(request):
         data = DirectorSerializer(directors, many=True).data
         return Response(data=data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
+        serializer = DirectorValidateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
         name = request.data.get('name')
 
         director = Director.objects.create(name=name)
@@ -106,6 +114,9 @@ def review_list_api_view(request):
         data = ReviewSerializer(reviews, many=True).data
         return Response(data=data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
+        serializer = ReviewValidateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
         movie = request.data.get('movie')
         text = request.data.get('text')
         stars = request.data.get('stars')
